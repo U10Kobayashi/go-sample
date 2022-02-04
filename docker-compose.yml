@@ -1,0 +1,41 @@
+version: '3'
+services:
+  go:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/home/go
+    working_dir: /home/go
+    environment:
+      TZ: Asia/Tokyo
+    ports:
+      - 8080:8080
+    security_opt:
+      - apparmor:unconfined
+    cap_add:
+      - SYS_PTRACE
+    tty: true
+
+  mysql:
+    platform: linux/x86_64
+    build: ./mysql
+    environment:
+      TZ: Asia/Tokyo
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: backend
+    ports:
+      - 13306:3306
+    volumes:
+      - mysql_volume:/var/lib/mysql
+
+  nginx:
+    container_name: "nginx"
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - "go"
+
+volumes:
+  mysql_volume:
